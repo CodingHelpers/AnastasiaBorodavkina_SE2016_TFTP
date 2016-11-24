@@ -1,7 +1,6 @@
 package state;
 
-/**
- * Created by mike on 11/24/16.
- */
-public class TransferMode {
+public enum TransferMode {
+    Octet,
+    NetAscii
 }

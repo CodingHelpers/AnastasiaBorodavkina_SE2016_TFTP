@@ -1,7 +1,13 @@
 package proto;
 
-/**
- * Created by mike on 11/24/16.
- */
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+
 public class PacketParser {
+    public Packet parse(DatagramPacket packet) {
+        throw new NotImplementedException();
+    }
+
 }
