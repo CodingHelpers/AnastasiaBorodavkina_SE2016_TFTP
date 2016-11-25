@@ -2,45 +2,12 @@ package proto;
 
 import state.TransferMode;
 
-import java.io.OutputStreamWriter;
-import java.net.DatagramPacket;
-
-public class ReadRequestPacket extends Packet {
-    private String filename;
-    private TransferMode mode;
-    private String login;
-    private String passwd;
-
+public class ReadRequestPacket extends RequestPacket {
     public ReadRequestPacket(String filename, TransferMode mode) {
-        this.filename = filename;
-        this.mode = mode;
+        super(Type.Read, filename, mode);
     }
 
     public ReadRequestPacket(String filename, TransferMode mode, String login, String passwd) {
-        this.filename = filename;
-        this.mode = mode;
-        this.login = login;
-        this.passwd = passwd;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public TransferMode getMode() {
-        return mode;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public String getPasswd() {
-        return passwd;
-    }
-
-    @Override
-    public void serialize(DatagramPacket packet) {
-
+        super(Type.Read, filename, mode, login, passwd);
     }
 }

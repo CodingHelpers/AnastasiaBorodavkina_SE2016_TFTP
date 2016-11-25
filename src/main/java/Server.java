@@ -16,7 +16,7 @@ public class Server {
     private int port;
     private byte[] readBuffer = new byte[512];
     private byte[] recvBuffer = new byte[516];
-    private byte[] sendBuffer = new byte[516];
+    private byte[] sendBuffer;
 
     DatagramPacket incoming = new DatagramPacket(recvBuffer, recvBuffer.length);
     DatagramPacket outgoing = new DatagramPacket(recvBuffer, recvBuffer.length);
@@ -47,9 +47,12 @@ public class Server {
             LOGGER.finest("Packet from " + inAddr + ":" + inPort + ": " + packet.toString());
 
             ClientState state = states.getOrDefault(incoming.getAddress(), new ClientState());
+
+            sendBuffer = null;
             handleClient(state, packet);
 
-            if(!state.closeConnection) {
+            if(sendBuffer != null) {
+                outgoing.setData(sendBuffer);
                 sock.send(outgoing);
             }
         }
@@ -80,7 +83,7 @@ public class Server {
             state.file = new RandomAccessFile(state.filename, "r");
         } catch (FileNotFoundException e) {
             ErrorPacket errorPacket = new ErrorPacket(1, "File not found");
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
             return;
         }
 
@@ -98,13 +101,13 @@ public class Server {
             state.file = new RandomAccessFile(state.filename, "r");
         } catch (FileNotFoundException e) {
             ErrorPacket errorPacket = new ErrorPacket(1, "File not found");
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
             return;
         }
 
         state.state = ClientState.State.WaitingData;
         AckPacket ack = new AckPacket(0);
-        ack.serialize(outgoing);
+        sendBuffer = ack.serialize();
     }
 
     private boolean authorize(String login, String passwd) {
@@ -119,7 +122,7 @@ public class Server {
 
         if(!authorized) {
             ErrorPacket errorPacket = new ErrorPacket(7, "No such user");
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
         }
 
         return authorized;
@@ -128,13 +131,13 @@ public class Server {
     private void handleAck(ClientState state, AckPacket packet) {
         if(state.state != ClientState.State.WaitingAck) {
             ErrorPacket errorPacket = new ErrorPacket(4, "Illegal TFTP operation");
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
             return;
         }
 
         if(state.lastBlock != packet.getBlockNumber()) {
             ErrorPacket errorPacket = new ErrorPacket(4, "Wrong ack block");
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
             return;
         }
 
@@ -149,7 +152,7 @@ public class Server {
     private void handleData(ClientState state, DataPacket packet) {
         if(state.state != ClientState.State.WaitingData) {
             ErrorPacket errorPacket = new ErrorPacket(4, "Illegal TFTP operation");
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
             return;
         }
 
@@ -157,7 +160,7 @@ public class Server {
             writeBlock(state, packet.getBlockNumber(), packet.getData());
         } catch (IOException e) {
             ErrorPacket errorPacket = new ErrorPacket(0, e.getMessage());
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
             return;
         }
 
@@ -168,7 +171,7 @@ public class Server {
 
 
         AckPacket ack = new AckPacket(packet.getBlockNumber());
-        ack.serialize(outgoing);
+        sendBuffer = ack.serialize();
     }
 
     private void sendBlock(ClientState state, int blockNumber) {
@@ -179,11 +182,12 @@ public class Server {
             bytesRead = state.file.read(readBuffer);
         } catch (IOException e) {
             ErrorPacket errorPacket = new ErrorPacket(0, e.getMessage());
-            errorPacket.serialize(outgoing);
+            sendBuffer = errorPacket.serialize();
+
         }
 
         DataPacket packet = new DataPacket(blockNumber, readBuffer);
-        packet.serialize(outgoing);
+        sendBuffer = packet.serialize();
 
         if(bytesRead < 512) {
             state.isLast = true;

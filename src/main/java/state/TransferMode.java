@@ -1,6 +1,6 @@
 package state;
 
 public enum TransferMode {
-    Octet,
-    NetAscii
+    OCTET,
+    NETASCII
 }
