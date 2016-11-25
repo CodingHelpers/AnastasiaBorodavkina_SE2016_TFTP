@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ public class Server {
     DatagramPacket outgoing = new DatagramPacket(recvBuffer, recvBuffer.length);
 
     private ClientDB clients;
-    private Map<InetAddress, ClientState> states = new HashMap<>();
+    private Map<SocketAddress, ClientState> states = new HashMap<>();
 
     public Server(int port, ClientDB clients) {
         this.clients = clients;
@@ -46,13 +47,18 @@ public class Server {
 
             LOGGER.finest("Packet from " + inAddr + ":" + inPort + ": " + packet.toString());
 
-            ClientState state = states.getOrDefault(incoming.getAddress(), new ClientState());
+            ClientState state = states.getOrDefault(incoming.getSocketAddress(), new ClientState());
+            if(!states.containsKey(incoming.getSocketAddress())) {
+                states.put(incoming.getSocketAddress(), state);
+            }
 
             sendBuffer = null;
             handleClient(state, packet);
 
             if(sendBuffer != null) {
                 outgoing.setData(sendBuffer);
+                outgoing.setAddress(incoming.getAddress());
+                outgoing.setPort(incoming.getPort());
                 sock.send(outgoing);
             }
         }
@@ -98,7 +104,7 @@ public class Server {
         state.filename = packet.getFilename();
 
         try {
-            state.file = new RandomAccessFile(state.filename, "r");
+            state.file = new RandomAccessFile(state.filename, "rw");
         } catch (FileNotFoundException e) {
             ErrorPacket errorPacket = new ErrorPacket(1, "File not found");
             sendBuffer = errorPacket.serialize();
@@ -136,7 +142,7 @@ public class Server {
         }
 
         if(state.lastBlock != packet.getBlockNumber()) {
-            ErrorPacket errorPacket = new ErrorPacket(4, "Wrong ack block");
+            ErrorPacket errorPacket = new ErrorPacket(4, "Wrong ack block. Expected " + state.lastBlock + ", got: " + packet.getBlockNumber());
             sendBuffer = errorPacket.serialize();
             return;
         }
@@ -186,7 +192,7 @@ public class Server {
 
         }
 
-        DataPacket packet = new DataPacket(blockNumber, readBuffer);
+        DataPacket packet = new DataPacket(blockNumber, readBuffer, bytesRead);
         sendBuffer = packet.serialize();
 
         if(bytesRead < 512) {

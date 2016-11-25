@@ -33,6 +33,14 @@ public class RequestPacket extends Packet {
         this.mode = mode;
     }
 
+    public RequestPacket(RequestPacket requestPacket) {
+        this.type = requestPacket.getType();
+        this.filename = requestPacket.getFilename();
+        this.mode = requestPacket.getMode();
+        this.login = requestPacket.getLogin();
+        this.passwd = requestPacket.getPasswd();
+    }
+
     public Type getType() {
         return type;
     }
@@ -58,7 +66,7 @@ public class RequestPacket extends Packet {
         int type = this.type.equals(Type.Read) ? 1 : 2;
 
         byte[] buffer = new byte[2];
-        buffer[0] = (byte) ((type >> 8) & 0xFF);
+        buffer[0] = (byte) ((type >>> 8) & 0xFF);
         buffer[1] = (byte) (type & 0xFF);
 
         buffer = ArrayUtils.addAll(buffer, filename.getBytes(US_ASCII.defaultCharset()));

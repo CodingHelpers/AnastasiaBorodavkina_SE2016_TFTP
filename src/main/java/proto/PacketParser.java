@@ -3,7 +3,10 @@ import misc.ArrayIterator;
 import org.apache.commons.lang.ArrayUtils;
 import state.TransferMode;
 
+import javax.xml.crypto.Data;
 import java.net.DatagramPacket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 
 public class PacketParser {
@@ -35,15 +38,15 @@ public class PacketParser {
         }
     }
 
-    private Packet parseReadRequest(ArrayIterator<Byte> message) {
-        return parseRequest(RequestPacket.Type.Read, message);
+    private ReadRequestPacket parseReadRequest(ArrayIterator<Byte> message) {
+        return new ReadRequestPacket(parseRequest(RequestPacket.Type.Read, message));
     }
 
-    private Packet parseWriteRequest(ArrayIterator<Byte> message) {
-        return parseRequest(RequestPacket.Type.Write, message);
+    private WriteRequestPacket parseWriteRequest(ArrayIterator<Byte> message) {
+        return new WriteRequestPacket(parseRequest(RequestPacket.Type.Write, message));
     }
 
-    private Packet parseRequest(RequestPacket.Type type, ArrayIterator<Byte> message) {
+    private RequestPacket parseRequest(RequestPacket.Type type, ArrayIterator<Byte> message) {
         String filename = parseCStr(message);
         String mode = parseCStr(message).toUpperCase();
         Map<String, String> options = new TreeMap<String, String>();
@@ -58,18 +61,19 @@ public class PacketParser {
         return new RequestPacket(type, filename, TransferMode.valueOf(mode), options.get("login"), options.get("passwd"));
     }
 
-    private Packet parseData(ArrayIterator<Byte> message) {
-        int blockNum = (message.next() << 8) | message.next();
+    private DataPacket parseData(ArrayIterator<Byte> message) {
+        int blockNum = parseShort(message);
+
         Byte[] block = Arrays.copyOfRange(message.array, message.begin, message.end);
         return new DataPacket(blockNum, ArrayUtils.toPrimitive(block));
     }
 
-    private Packet parseAck(ArrayIterator<Byte> message) {
-        int blockNum = (message.next() << 8) | message.next();
+    private AckPacket parseAck(ArrayIterator<Byte> message) {
+        int blockNum = parseShort(message);
         return new AckPacket(blockNum);
     }
 
-    private Packet parseError(ArrayIterator<Byte> message) {
+    private ErrorPacket parseError(ArrayIterator<Byte> message) {
         int errorNum = (message.next() << 8) | message.next();
         String errorMsg = parseCStr(message);
         return new ErrorPacket(errorNum, errorMsg);
@@ -92,6 +96,13 @@ public class PacketParser {
         }
 
         return new String(buffer, 0, idx);
+    }
+
+    private short parseShort(ArrayIterator<Byte> message) {
+        byte[] blockNumBuf = { message.next(), message.next() };
+        ByteBuffer buffer = ByteBuffer.wrap(blockNumBuf);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        return buffer.getShort();
     }
 
 }

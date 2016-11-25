@@ -29,7 +29,7 @@ public class ErrorPacket extends Packet {
         byte[] buffer = new byte[4];
         buffer[1] = (byte) 5;
 
-        buffer[2] = (byte) ((errorNumber >> 8) & 0xFF);
+        buffer[2] = (byte) ((errorNumber >>> 8) & 0xFF);
         buffer[3] = (byte) (errorNumber & 0xFF);
 
         buffer = ArrayUtils.addAll(buffer,  errorMessage.getBytes(US_ASCII.defaultCharset()));

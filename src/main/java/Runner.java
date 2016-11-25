@@ -1,7 +1,13 @@
 import org.docopt.Docopt;
+import org.omg.CORBA.INTERNAL;
 
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -22,6 +28,7 @@ public class Runner {
                     + "\n";
 
     public static void main(String[] args) {
+        System.setProperty("java.net.preferIPv4Stack", "true");
         Map<String, Object> opts = new Docopt(doc).withVersion("TFTP 0.1").parse(args);
         System.out.println(opts.toString());
 
@@ -60,6 +67,27 @@ public class Runner {
     }
 
     public static void runClient(Map<String, Object> opts) {
+        String host = (String) opts.get("<host>");
+        Integer port = Integer.parseInt((String) opts.get("<port>"));
+        String login = (String) opts.get("<login>");
+        String passwd = (String) opts.get("<passwd>");
 
+        InetAddress addr = null;
+        try {
+            addr = InetAddress.getByName(host);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            Client client = new Client(addr, port, login, passwd);
+          //  client.readFile("./testdata/vim.txt",
+          //                  "./testdata/recv_vim.txt");
+            client.writeFile("./testdata/vim.txt",
+                             "./testdata/sent_vim.txt");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
