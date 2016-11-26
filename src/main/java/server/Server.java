@@ -8,6 +8,9 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -86,10 +89,24 @@ public class Server {
 
         state.filename = packet.getFilename();
 
+        // Check file existence
+        Path path = Paths.get(state.filename);
+        if(!Files.exists(path)) {
+            ErrorPacket errorPacket = new ErrorPacket(1, "File not found");
+            sendBuffer = errorPacket.serialize();
+            return;
+        }
+
+        if(Files.isDirectory(path)) {
+            ErrorPacket errorPacket = new ErrorPacket(0, state.filename + " is a directory");
+            sendBuffer = errorPacket.serialize();
+            return;
+        }
+
         try {
             state.file = new RandomAccessFile(state.filename, "r");
         } catch (FileNotFoundException e) {
-            ErrorPacket errorPacket = new ErrorPacket(1, "File not found");
+            ErrorPacket errorPacket = new ErrorPacket(0, e.getMessage());
             sendBuffer = errorPacket.serialize();
             return;
         }
@@ -107,7 +124,7 @@ public class Server {
         try {
             state.file = new RandomAccessFile(state.filename, "rw");
         } catch (FileNotFoundException e) {
-            ErrorPacket errorPacket = new ErrorPacket(1, "File not found");
+            ErrorPacket errorPacket = new ErrorPacket(0, e.getMessage());
             sendBuffer = errorPacket.serialize();
             return;
         }
