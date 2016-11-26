@@ -1,7 +1,7 @@
 package proto;
 
 import org.junit.Test;
-import state.TransferMode;
+import server.state.TransferMode;
 
 import static org.junit.Assert.*;
 

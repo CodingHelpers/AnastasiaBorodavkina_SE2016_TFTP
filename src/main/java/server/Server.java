@@ -1,11 +1,12 @@
+package server;
+
 import proto.*;
-import state.ClientState;
+import server.state.ClientState;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.logging.Logger;
 
 
 public class Server {
-    private final static Logger LOGGER = Logger.getLogger(Server.class.getName());
+    private final static Logger LOGGER = Logger.getGlobal();
     private int port;
     private byte[] readBuffer = new byte[512];
     private byte[] recvBuffer = new byte[516];
@@ -45,7 +46,7 @@ public class Server {
 
             Packet packet = packetParser.parse(incoming);
 
-            LOGGER.finest("Packet from " + inAddr + ":" + inPort + ": " + packet.toString());
+            LOGGER.info("Packet from " + inAddr + ":" + inPort + ": " + packet.toString());
 
             ClientState state = states.getOrDefault(incoming.getSocketAddress(), new ClientState());
             if(!states.containsKey(incoming.getSocketAddress())) {

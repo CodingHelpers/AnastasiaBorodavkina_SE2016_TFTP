@@ -15,6 +15,7 @@ public class DataPacket extends Packet {
     public DataPacket(int blockNumber, byte[] data) {
         this.blockNumber = blockNumber;
         this.data = data;
+        this.length = data.length;
     }
 
     public DataPacket(int blockNumber, byte[] data, int length) {
@@ -45,5 +46,10 @@ public class DataPacket extends Packet {
         }
 
         return ArrayUtils.addAll(buffer, data);
+    }
+
+    @Override
+    public String toString() {
+        return "DataPacket { blockNumber: " + blockNumber + ", length: " + length + " }";
     }
 }

@@ -1,10 +1,6 @@
-package state;
+package server.state;
 
-import java.io.File;
 import java.io.RandomAccessFile;
-import java.nio.channels.SeekableByteChannel;
-import java.util.List;
-import java.util.Map;
 
 public class ClientState {
     public enum State {

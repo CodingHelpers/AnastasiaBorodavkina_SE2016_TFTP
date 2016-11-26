@@ -35,4 +35,9 @@ public class ErrorPacket extends Packet {
         buffer = ArrayUtils.addAll(buffer,  errorMessage.getBytes(US_ASCII.defaultCharset()));
         return ArrayUtils.add(buffer, (byte) 0x0);
     }
+
+    @Override
+    public String toString() {
+        return "ErrorPacket { errorNumber: " + errorNumber + ", errorMessage: '" + errorMessage + "' }";
+    }
 }

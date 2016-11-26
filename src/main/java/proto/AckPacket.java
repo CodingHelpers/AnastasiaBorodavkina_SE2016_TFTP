@@ -24,4 +24,9 @@ public class AckPacket extends Packet {
 
         return buffer;
     }
+
+    @Override
+    public String toString() {
+        return "AckPacket { blockNumber: " + blockNumber + " }";
+    }
 }

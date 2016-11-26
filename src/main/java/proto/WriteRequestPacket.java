@@ -1,6 +1,6 @@
 package proto;
 
-import state.TransferMode;
+import server.state.TransferMode;
 
 
 public class WriteRequestPacket extends RequestPacket {

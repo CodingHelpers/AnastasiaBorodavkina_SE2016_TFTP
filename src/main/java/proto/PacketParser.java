@@ -1,9 +1,8 @@
 package proto;
 import misc.ArrayIterator;
 import org.apache.commons.lang.ArrayUtils;
-import state.TransferMode;
+import server.state.TransferMode;
 
-import javax.xml.crypto.Data;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

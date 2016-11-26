@@ -1,12 +1,9 @@
 package proto;
 
-import com.sun.deploy.util.ArrayUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Test;
-import state.TransferMode;
+import server.state.TransferMode;
 import sun.nio.cs.US_ASCII;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 

@@ -1,6 +1,6 @@
 package proto;
 
-import state.TransferMode;
+import server.state.TransferMode;
 
 public class ReadRequestPacket extends RequestPacket {
     public ReadRequestPacket(String filename, TransferMode mode) {
@@ -14,4 +14,6 @@ public class ReadRequestPacket extends RequestPacket {
     public ReadRequestPacket(RequestPacket requestPacket) {
         super(requestPacket);
     }
+
+
 }

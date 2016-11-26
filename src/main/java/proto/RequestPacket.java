@@ -1,11 +1,8 @@
 package proto;
 
 import org.apache.commons.lang.ArrayUtils;
-import state.TransferMode;
+import server.state.TransferMode;
 import sun.nio.cs.US_ASCII;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.net.DatagramPacket;
 
 public class RequestPacket extends Packet {
     enum Type {
@@ -89,5 +86,10 @@ public class RequestPacket extends Packet {
         }
 
         return buffer;
+    }
+
+    @Override
+    public String toString() {
+        return "RequestPacket { type: " + type + ", filename: '" + filename + "', mode: " + mode + ", login:'" + login + "', passwd: '" + passwd + "' }";
     }
 }

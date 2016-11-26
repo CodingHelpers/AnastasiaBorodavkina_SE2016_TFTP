@@ -1,13 +1,17 @@
+package client;
+
 import proto.*;
-import state.TransferMode;
+import server.state.TransferMode;
 
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.logging.Logger;
 
 public class Client {
+    private Logger LOGGER = Logger.getGlobal();
     private InetAddress addr;
     private int port;
     private String login;
@@ -42,6 +46,8 @@ public class Client {
         outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
         sock.send(outDatagram);
 
+        LOGGER.info("--> " + writeRequest.toString());
+
         int lastBlock = 0;
         boolean done = false;
         while(!done) {
@@ -57,6 +63,7 @@ public class Client {
             }
 
             AckPacket ackPacket = (AckPacket) packet;
+            LOGGER.info("<-- " + ackPacket.toString());
             int ackBlockNum = ackPacket.getBlockNumber();
 
             if(lastBlock != ackBlockNum) {
@@ -71,6 +78,8 @@ public class Client {
             buffer = dataPacket.serialize();
             outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
             sock.send(outDatagram);
+
+            LOGGER.info("--> " + dataPacket.toString());
 
             if(blockLen < 512) {
                 done = true;
@@ -95,6 +104,8 @@ public class Client {
         outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
         sock.send(outDatagram);
 
+        LOGGER.info("--> " + readRequest.toString());
+
         while(true) {
             // Waiting for answer
             sock.receive(inDatagram);
@@ -108,6 +119,9 @@ public class Client {
             }
 
             DataPacket dataPacket = (DataPacket) packet;
+
+            LOGGER.info("<-- " + dataPacket.toString());
+
             int blockNum = dataPacket.getBlockNumber();
             byte[] data = dataPacket.getData();
 
@@ -119,6 +133,8 @@ public class Client {
             buffer = ackPacket.serialize();
             outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
             sock.send(outDatagram);
+
+            LOGGER.info("--> " + ackPacket.toString());
 
             if(data.length < 512) {
                 break;
