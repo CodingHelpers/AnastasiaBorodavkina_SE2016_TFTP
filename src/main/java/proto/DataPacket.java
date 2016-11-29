@@ -34,6 +34,10 @@ public class DataPacket extends Packet {
 
     @Override
     public byte[] serialize() {
+        if(blockNumber == 65536) {
+
+        }
+
         byte[] buffer = new byte[4];
         buffer[1] = (byte) 3;
 

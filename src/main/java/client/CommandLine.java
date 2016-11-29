@@ -54,10 +54,21 @@ public class CommandLine {
 
     private void perform(Opcode mode, String filename) throws IOException {
         filename = "./" + filename;
+
+        long time = System.currentTimeMillis();
+        long transfered;
+
         if(mode.equals(Opcode.UP)) {
-            client.writeFile(filename, filename);
+            transfered = client.writeFile(filename, filename);
         } else {
-            client.readFile(filename, filename);
+            transfered = client.readFile(filename, filename);
         }
+
+        time = System.currentTimeMillis() - time;
+
+        long kylobytes = transfered / 1000;
+        double seconds = time / (double) 1000;
+
+        System.out.println("Transfered " + kylobytes + " kylobytes. Speed: " + kylobytes / seconds + "KB/s");
     }
 }

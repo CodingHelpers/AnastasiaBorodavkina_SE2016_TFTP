@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.regex.Matcher;
 
 public class PacketParser {
     public Packet parse(DatagramPacket packet) {
@@ -97,11 +98,11 @@ public class PacketParser {
         return new String(buffer, 0, idx);
     }
 
-    private short parseShort(ArrayIterator<Byte> message) {
-        byte[] blockNumBuf = { message.next(), message.next() };
+    private int parseShort(ArrayIterator<Byte> message) {
+        byte[] blockNumBuf = {0, 0, message.next(), message.next() };
         ByteBuffer buffer = ByteBuffer.wrap(blockNumBuf);
         buffer.order(ByteOrder.BIG_ENDIAN);
-        return buffer.getShort();
+        return Math.abs(buffer.getInt());
     }
 
 }

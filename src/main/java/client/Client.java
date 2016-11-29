@@ -27,7 +27,7 @@ public class Client {
         sock = new DatagramSocket();
     }
 
-    public void writeFile(String localFilename, String remoteFilemname) throws IOException {
+    public long writeFile(String localFilename, String remoteFilemname) throws IOException {
         byte[] recvBuffer = new byte[516];
         byte[] block = new byte[512];
         byte[] buffer;
@@ -48,9 +48,10 @@ public class Client {
 
         LOGGER.info("--> " + writeRequest.toString());
 
+        long transferSize = 0;
         int lastBlock = 0;
         boolean done = false;
-        while(!done) {
+        while(true) {
             // Waiting for answer
             sock.receive(inDatagram);
             packet = parser.parse(inDatagram);
@@ -70,9 +71,18 @@ public class Client {
                 throw new RuntimeException("Unexpected ack " + ackPacket.toString());
             }
 
+            // Breaking here because we must read last ACK from socket.
+            if(done) {
+                break;
+            }
+
             file.seek(0);
             file.seek((lastBlock++) * 512);
             int blockLen = file.read(block);
+
+            // If file size is multiplication of block size, last read will fail with -1 return code
+            if(blockLen < 0) blockLen = 0;
+            transferSize += blockLen;
 
             DataPacket dataPacket = new DataPacket(lastBlock, block, blockLen);
             buffer = dataPacket.serialize();
@@ -85,9 +95,11 @@ public class Client {
                 done = true;
             }
         }
+
+        return transferSize;
     }
 
-    public void readFile(String remoteFilemname, String localFilename) throws IOException {
+    public long readFile(String remoteFilemname, String localFilename) throws IOException {
         byte[] recvBuffer = new byte[516];
         byte[] buffer;
         RandomAccessFile file = new RandomAccessFile(localFilename, "rw");
@@ -106,6 +118,7 @@ public class Client {
 
         LOGGER.info("--> " + readRequest.toString());
 
+        long transferSize = 0;
         while(true) {
             // Waiting for answer
             sock.receive(inDatagram);
@@ -125,6 +138,8 @@ public class Client {
             int blockNum = dataPacket.getBlockNumber();
             byte[] data = dataPacket.getData();
 
+            transferSize += data.length;
+
             file.seek(0);
             file.seek((blockNum-1) * 512);
             file.write(data);
@@ -140,5 +155,7 @@ public class Client {
                 break;
             }
         }
+
+        return transferSize;
     }
 }
