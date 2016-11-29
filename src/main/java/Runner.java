@@ -40,9 +40,9 @@ public class Runner {
 
         // Set verbosity
         if(opts.get("--verbose").equals(true)) {
-            LOGGER.setLevel(Level.INFO);
+            LOGGER.setLevel(Level.FINEST);
         } else {
-            LOGGER.setLevel(Level.WARNING);
+            LOGGER.setLevel(Level.INFO);
         }
 
         // Select mode

@@ -46,7 +46,8 @@ public class Client {
         outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
         sock.send(outDatagram);
 
-        LOGGER.info("--> " + writeRequest.toString());
+        LOGGER.info("Sending file " + localFilename);
+        LOGGER.finest("--> " + writeRequest.toString());
 
         long transferSize = 0;
         int lastBlock = 0;
@@ -64,7 +65,7 @@ public class Client {
             }
 
             AckPacket ackPacket = (AckPacket) packet;
-            LOGGER.info("<-- " + ackPacket.toString());
+            LOGGER.finest("<-- " + ackPacket.toString());
             int ackBlockNum = ackPacket.getBlockNumber();
 
             if(lastBlock != ackBlockNum) {
@@ -89,7 +90,7 @@ public class Client {
             outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
             sock.send(outDatagram);
 
-            LOGGER.info("--> " + dataPacket.toString());
+            LOGGER.finest("--> " + dataPacket.toString());
 
             if(blockLen < 512) {
                 done = true;
@@ -116,7 +117,8 @@ public class Client {
         outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
         sock.send(outDatagram);
 
-        LOGGER.info("--> " + readRequest.toString());
+        LOGGER.info("Receiving file " + remoteFilemname);
+        LOGGER.finest("--> " + readRequest.toString());
 
         long transferSize = 0;
         while(true) {
@@ -133,7 +135,7 @@ public class Client {
 
             DataPacket dataPacket = (DataPacket) packet;
 
-            LOGGER.info("<-- " + dataPacket.toString());
+            LOGGER.finest("<-- " + dataPacket.toString());
 
             int blockNum = dataPacket.getBlockNumber();
             byte[] data = dataPacket.getData();
@@ -149,7 +151,7 @@ public class Client {
             outDatagram = new DatagramPacket(buffer, buffer.length, addr, port);
             sock.send(outDatagram);
 
-            LOGGER.info("--> " + ackPacket.toString());
+            LOGGER.finest("--> " + ackPacket.toString());
 
             if(data.length < 512) {
                 break;

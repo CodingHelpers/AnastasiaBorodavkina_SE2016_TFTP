@@ -49,7 +49,7 @@ public class Server {
 
             Packet packet = packetParser.parse(incoming);
 
-            LOGGER.info("Packet from " + inAddr + ":" + inPort + ": " + packet.toString());
+            LOGGER.finest("Packet from " + inAddr + ":" + inPort + ": " + packet.toString());
 
             ClientState state = states.getOrDefault(incoming.getSocketAddress(), new ClientState());
             if(!states.containsKey(incoming.getSocketAddress())) {
@@ -87,6 +87,8 @@ public class Server {
             return;
         }
 
+        LOGGER.info("Read request: " + packet.toString());
+
         state.filename = packet.getFilename();
 
         // Check file existence
@@ -118,6 +120,8 @@ public class Server {
         if(!authorize(packet.getLogin(), packet.getPasswd())) {
             return;
         }
+
+        LOGGER.info("Write request: " + packet.toString());
 
         state.filename = packet.getFilename();
 
